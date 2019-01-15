@@ -1,2 +1,4 @@
 Flask
 flask-socketio
+gevent-websocket
+requests

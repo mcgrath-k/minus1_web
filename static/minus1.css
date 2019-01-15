@@ -94,7 +94,7 @@ section:first-child h1 {
     font-size: calc(2 * var(--header-font-size));
 }
 
-section:last-child {
+section:last-of-type {
     background-color: var(--light-color);
     color: var(--dark-color);
 }
