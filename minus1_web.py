@@ -13,9 +13,6 @@ BUTTON_COORDS = {
 }
 
 last_pop = '7,420,420,420'
-last_presses = [
-    'button 0 pressed at (39.6860332, -104.9379315) at 2019-01-15 05:13:30.164099 - population 7,677,252,971'
-]
 
 fullPath = os.path.dirname(os.path.abspath(__file__))
 
@@ -24,6 +21,14 @@ conn = sqlite3.connect(os.path.join(fullPath, 'press_history.db'))
 c = conn.cursor()
 c.execute('''CREATE TABLE IF NOT EXISTS presses (button_num, coordinates, thedate, population)''')
 press_sql = "INSERT INTO presses (button_num, coordinates, thedate , population) VALUES (?, ?, ?, ?);"
+
+
+def format_press_msg(button, coords, timestamp, pop):
+    return 'button {} pressed at {} at {} - population {}'.format(button, coords, timestamp, pop)
+
+
+c.execute("SELECT button_num, coordinates, thedate, population FROM presses ORDER BY thedate DESC LIMIT 30")
+last_presses = [format_press_msg(*tuple(x)) for x in reversed(c.fetchall())]
 
 
 app = Flask(__name__)
@@ -38,10 +43,14 @@ def hello_world():
 
 def get_pop():
     global last_pop
-    pop = int(requests.get("http://localhost:3000").text) - 1
-    pop = '{:,}'.format(pop)
-    last_pop = pop
-    return pop
+    try:
+        pop = int(requests.get("http://localhost:3000").text) - 1
+        pop = '{:,}'.format(pop)
+        last_pop = pop
+        return pop
+    except requests.exceptions.ConnectionError:
+        print('Failed to connect to population server')
+        return last_pop
 
 @app.route('/checkconnection')
 def test():
@@ -55,8 +64,7 @@ def press():
     pop = get_pop()
     if button_id:
         coords = BUTTON_COORDS.get(button_id, '(???, ???)')
-        message = 'button {} pressed at {} at {} - population {}'.format(button_id, coords,
-                                                                         str(datetime.datetime.now()), pop)
+        message = format_press_msg(button_id, coords, str(datetime.datetime.now()), pop)
         c.execute(press_sql, (button_id, str(coords), str(datetime.datetime.now()), pop))
     else:
         message = 'mobile access'
