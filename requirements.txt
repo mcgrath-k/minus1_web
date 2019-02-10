@@ -2,4 +2,3 @@ Flask
 flask-socketio
 gevent-websocket
 requests
-sqlite3
