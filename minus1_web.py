@@ -12,15 +12,28 @@ BUTTON_COORDS = {
     '0': '(39.6860332, -104.9379315)',
 }
 
-last_pop = '7,420,420,420'
-
 fullPath = os.path.dirname(os.path.abspath(__file__))
 
 
 conn = sqlite3.connect(os.path.join(fullPath, 'press_history.db'))
 c = conn.cursor()
 c.execute('''CREATE TABLE IF NOT EXISTS presses (button_num, coordinates, thedate, population)''')
+c.execute('CREATE TABLE IF NOT EXISTS globals (name PRIMARY KEY, value)')
 press_sql = "INSERT INTO presses (button_num, coordinates, thedate , population) VALUES (?, ?, ?, ?);"
+
+
+def get_global(name, default=None):
+    c.execute('SELECT name, value FROM globals WHERE name = ?', (name,))
+    result = c.fetchone()
+    if result is None:
+        return default
+    else:
+        return result[1]
+
+
+def set_global(name, value):
+    c.execute('INSERT OR REPLACE INTO globals (name, value) VALUES (?, ?)', (name, value))
+    conn.commit()
 
 
 def format_press_msg(button, coords, timestamp, pop):
@@ -38,19 +51,18 @@ socketio = SocketIO(app)
 
 @app.route('/')
 def hello_world():
-    return render_template('index.html', key=random.random(), pop=last_pop, presses=last_presses)
+    return render_template('index.html', key=random.random(), pop=get_global('last_pop', '7,420,420,420'), presses=last_presses)
 
 
 def get_pop():
-    global last_pop
     try:
         pop = int(requests.get("http://localhost:3000").text) - 1
         pop = '{:,}'.format(pop)
-        last_pop = pop
+        set_global('last_pop', pop)
         return pop
     except requests.exceptions.ConnectionError:
         print('Failed to connect to population server')
-        return last_pop
+        return get_global('last_pop', '7,420,420,420')
 
 @app.route('/checkconnection')
 def test():
