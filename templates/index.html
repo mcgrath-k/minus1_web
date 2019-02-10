@@ -43,8 +43,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script type="text/javascript" charset="utf-8">
     var socket = io.connect('http://' + document.domain + ':' + location.port);
+    let interval;
     socket.on('connect', function() {
-        setInterval(function() {socket.emit('ping', null);}, 1000);
+        interval = setInterval(function() {socket.emit('ping', null);}, 1000);
+    });
+    socket.on('disconnect', function() {
+        clearInterval(interval);
     });
     socket.on('press', function(x) {
         $("<p></p>")
