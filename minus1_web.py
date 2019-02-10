@@ -17,7 +17,7 @@ last_presses = [
     'button 0 pressed at (39.6860332, -104.9379315) at 2019-01-15 05:13:30.164099 - population 7,677,252,971'
 ]
 
-script_path = os.path.dirname(os.path.abspath(__file__))
+fullPath = os.path.dirname(os.path.abspath(__file__))
 
 
 conn = sqlite3.connect(os.path.join(fullPath, 'press_history.db'))
