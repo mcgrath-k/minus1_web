@@ -43,6 +43,10 @@ def get_pop():
     last_pop = pop
     return pop
 
+@app.route('/checkconnection')
+def test():
+    return ""
+
 
 @app.route('/press')
 def press():
