@@ -98,7 +98,6 @@ def client_ping(_):
 @app.route('/database')
 def data_check():
     print(c.fetchall())
-    conn.close()
     return 0
 
 
