@@ -9,7 +9,7 @@ from flask_socketio import SocketIO, emit
 import requests
 
 BUTTON_COORDS = {
-    '0': '(39.6860332, -104.9379315)',
+    '0': '(39.7614419, -104.9846901)',
 }
 
 fullPath = os.path.dirname(os.path.abspath(__file__))
