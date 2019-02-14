@@ -39,12 +39,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script type="text/javascript" charset="utf-8">
     const socket = io.connect('http://' + document.domain + ':' + location.port);
-    let interval;
+    let offset = 0;
     socket.on('connect', function() {
-        interval = setInterval(function() {socket.emit('ping', null);}, 1000);
-    });
-    socket.on('disconnect', function() {
-        clearInterval(interval);
+        socket.once('sync', function(serverTime) {
+            const syncEnd = new Date(serverTime);
+            const syncTime = syncEnd - syncStart;
+            offset = -syncTime;
+        });
+        const syncStart = new Date();
+        socket.emit('sync', true);
     });
     socket.on('press', function(x) {
         $("<p></p>")
@@ -56,6 +59,7 @@
 
     function updatePopulation() {
         const now = new Date();
+        now.setTime(now.getTime() + offset);
 
         const todaysdate = new Date(now.getFullYear(),now.getMonth(),now.getDate(),0,0,0,0);
         const jul18 = new Date(1530403200000); //new Date("Jul 1, 2018");

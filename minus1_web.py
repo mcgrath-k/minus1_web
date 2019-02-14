@@ -5,7 +5,7 @@ import sqlite3
 import os
 
 from flask import Flask, render_template, request
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, emit
 import requests
 
 BUTTON_COORDS = {
@@ -94,6 +94,15 @@ def press():
 def data_check():
     print(c.fetchall())
     return 0
+
+
+@socketio.on('sync')
+def sync(use_utc):
+    if use_utc:
+        now = datetime.datetime.now(tz=datetime.timezone.utc)
+    else:
+        now = datetime.datetime.now()
+    emit('sync', now.isoformat(timespec='milliseconds'))
 
 
 if __name__ == '__main__':
