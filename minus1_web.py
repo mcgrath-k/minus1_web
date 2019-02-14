@@ -61,7 +61,6 @@ last_presses = [format_press_msg(*tuple(x)) for x in reversed(c.fetchall())]
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'jriojfiofjoisj'  # TODO literally anything else
 socketio = SocketIO(app)
 
 
@@ -84,12 +83,10 @@ def press():
         coords = BUTTON_COORDS.get(button_id, '(???, ???)')
         message = format_press_msg(button_id, coords, str(datetime.datetime.now()), pop)
         c.execute(press_sql, (button_id, str(coords), str(datetime.datetime.now()), pop))
-    else:
-        message = 'mobile access'
+        conn.commit()
+        last_presses = last_presses + [message]
+        socketio.emit('press', message)
 
-    conn.commit()
-    last_presses = last_presses + [message]
-    socketio.emit('press', message)
     return pop.replace(',', '')
 
 
