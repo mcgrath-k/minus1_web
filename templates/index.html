@@ -38,7 +38,7 @@
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script type="text/javascript" charset="utf-8">
-    var socket = io.connect('http://' + document.domain + ':' + location.port);
+    const socket = io.connect('http://' + document.domain + ':' + location.port);
     let interval;
     socket.on('connect', function() {
         interval = setInterval(function() {socket.emit('ping', null);}, 1000);
@@ -53,9 +53,29 @@
             .appendTo("#log")
             .slideDown();
     });
-    socket.on('pop', function(x) {
-        $("#pop").text(x);
-    });
+
+    function updatePopulation() {
+        const now = new Date();
+
+        const todaysdate = new Date(now.getFullYear(),now.getMonth(),now.getDate(),0,0,0,0);
+        const jul18 = new Date(1530403200000); //new Date("Jul 1, 2018");
+        const seconds_today = (now.getTime()-todaysdate.getTime())/1000;
+
+        const seconds_since_jul18_server = Math.round(now.getTime() - jul18.getTime())/1000;
+
+        let pop = Math.round( seconds_since_jul18_server * 2.5907 + 7632819325 - (seconds_today) * 2.5907)
+            + Math.round((seconds_today) * 4.4634)
+            - Math.round((seconds_today) * 1.8727);
+
+        pop = pop - 1;
+        pop = "" + pop;
+        for (let i = pop.length - 3; i > 0; i -= 3) {
+            pop = pop.substring(0, i) + "," + pop.substring(i);
+        }
+        $("#pop").text(pop);
+        requestAnimationFrame(updatePopulation);
+    }
+    requestAnimationFrame(updatePopulation);
 </script>
 
 </body>
