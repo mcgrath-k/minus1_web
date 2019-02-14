@@ -40,6 +40,22 @@ def format_press_msg(button, coords, timestamp, pop):
     return 'button {} pressed at {} at {} - population {}'.format(button, coords, timestamp, pop)
 
 
+def get_pop():
+    now = datetime.datetime.now(tz=datetime.timezone.utc)
+    today = datetime.datetime(now.year, now.month, now.day, tzinfo=datetime.timezone.utc)
+    jul18 = datetime.datetime(2018, 7, 1, tzinfo=datetime.timezone.utc)
+    seconds_today = (now - today).total_seconds()
+    seconds_since_jul18 = round((now - jul18).total_seconds())
+
+    pop = round(seconds_since_jul18 * 2.5907 + 7632819325 - seconds_today * 2.5907) + round(
+        seconds_today * 4.4634) - round(seconds_today * 1.8727)
+
+    pop = pop - 1
+    pop = '{:,}'.format(pop)
+    set_global('last_pop', pop)
+    return pop
+
+
 c.execute("SELECT button_num, coordinates, thedate, population FROM presses ORDER BY thedate DESC LIMIT 30")
 last_presses = [format_press_msg(*tuple(x)) for x in reversed(c.fetchall())]
 
@@ -51,18 +67,8 @@ socketio = SocketIO(app)
 
 @app.route('/')
 def hello_world():
-    return render_template('index.html', key=random.random(), pop=get_global('last_pop', '7,420,420,420'), presses=last_presses)
+    return render_template('index.html', key=random.random(), pop=get_pop(), presses=last_presses)
 
-
-def get_pop():
-    try:
-        pop = int(requests.get("http://localhost:3000").text) - 1
-        pop = '{:,}'.format(pop)
-        set_global('last_pop', pop)
-        return pop
-    except requests.exceptions.ConnectionError:
-        print('Failed to connect to population server')
-        return get_global('last_pop', '7,420,420,420')
 
 @app.route('/checkconnection')
 def test():
@@ -85,14 +91,6 @@ def press():
     last_presses = last_presses + [message]
     socketio.emit('press', message)
     return pop.replace(',', '')
-
-
-@socketio.on('ping')
-def client_ping(_):
-    print('Got ping')
-    pop = get_pop()
-    socketio.emit('pop', pop)
-    return "beans"
 
 
 @app.route('/database')
