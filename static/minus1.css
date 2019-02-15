@@ -16,11 +16,11 @@ html {
 }
 
 body {
-    height: 200%;
+    height: 100%;
 }
 
 section {
-    height: 50%;
+    height: 100%;
     display: flex;
     flex-flow: column;
     align-items: center;
@@ -92,9 +92,4 @@ section:first-child h1, section:first-child h2 {
 
 section:first-child h1 {
     font-size: calc(2 * var(--header-font-size));
-}
-
-section:last-of-type {
-    background-color: var(--light-color);
-    color: var(--dark-color);
 }
